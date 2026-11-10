@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="Self-Training Loop">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#12233f"/>
+    </linearGradient>
+    <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#60a5fa"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="300" rx="18" fill="url(#bg)"/>
+  <!-- loop mark -->
+  <g transform="translate(150 150)" fill="none" stroke="#60a5fa" stroke-width="10" stroke-linecap="round">
+    <path d="M-62 -10 A66 66 0 0 1 40 -52" marker-end="url(#ah)"/>
+    <path d="M62 10 A66 66 0 0 1 -40 52" marker-end="url(#ah)"/>
+  </g>
+  <g transform="translate(150 150)">
+    <circle r="24" fill="#2563eb"/>
+    <path d="M-10 4 L-2 12 L12 -8" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="270" y="140" font-family="Helvetica Neue, Arial, sans-serif" font-size="70" font-weight="700" fill="#f1f5f9">Self-Training Loop</text>
+  <text x="272" y="190" font-family="Helvetica Neue, Arial, sans-serif" font-size="28" fill="#93c5fd">Test it. Score it blind. Let the best answer teach the prompt.</text>
+  <text x="272" y="236" font-family="Menlo, Consolas, monospace" font-size="20" fill="#64748b">a skill for Claude Code</text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 330" role="img" aria-label="The loop: test, judge, ideal version, doctor, keep winners, graph">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker>
+  </defs>
+  <rect width="1200" height="330" rx="16" fill="#0b1220"/>
+  <g font-family="Helvetica Neue, Arial, sans-serif" text-anchor="middle">
+    <g>
+      <rect x="30" y="70" width="170" height="110" rx="12" fill="#12233f" stroke="#2563eb" stroke-width="2"/>
+      <text x="115" y="108" font-size="15" fill="#60a5fa" font-weight="700">1  TEST</text>
+      <text x="115" y="136" font-size="14" fill="#e2e8f0">fresh agents see</text>
+      <text x="115" y="156" font-size="14" fill="#e2e8f0">only your prompt</text>
+    </g>
+    <g>
+      <rect x="240" y="70" width="170" height="110" rx="12" fill="#12233f" stroke="#2563eb" stroke-width="2"/>
+      <text x="325" y="108" font-size="15" fill="#60a5fa" font-weight="700">2  JUDGE</text>
+      <text x="325" y="136" font-size="14" fill="#e2e8f0">blind, harsh, same</text>
+      <text x="325" y="156" font-size="14" fill="#e2e8f0">panel as the original</text>
+    </g>
+    <g>
+      <rect x="450" y="70" width="170" height="110" rx="12" fill="#12233f" stroke="#2563eb" stroke-width="2"/>
+      <text x="535" y="108" font-size="15" fill="#60a5fa" font-weight="700">3  IDEAL</text>
+      <text x="535" y="136" font-size="14" fill="#e2e8f0">judge writes the</text>
+      <text x="535" y="156" font-size="14" fill="#e2e8f0">10/10 answer</text>
+    </g>
+    <g>
+      <rect x="660" y="70" width="170" height="110" rx="12" fill="#12233f" stroke="#2563eb" stroke-width="2"/>
+      <text x="745" y="108" font-size="15" fill="#60a5fa" font-weight="700">4  DOCTOR</text>
+      <text x="745" y="136" font-size="14" fill="#e2e8f0">three rival fixes</text>
+      <text x="745" y="156" font-size="14" fill="#e2e8f0">A, B and C</text>
+    </g>
+    <g>
+      <rect x="870" y="70" width="140" height="110" rx="12" fill="#12233f" stroke="#2563eb" stroke-width="2"/>
+      <text x="940" y="108" font-size="15" fill="#60a5fa" font-weight="700">5  KEEP</text>
+      <text x="940" y="136" font-size="14" fill="#e2e8f0">only what wins</text>
+      <text x="940" y="156" font-size="14" fill="#e2e8f0">on 2 of 3 cases</text>
+    </g>
+    <g>
+      <rect x="1040" y="70" width="140" height="110" rx="12" fill="#1d3a2a" stroke="#4ade80" stroke-width="2"/>
+      <text x="1110" y="108" font-size="15" fill="#4ade80" font-weight="700">6  GRAPH</text>
+      <text x="1110" y="136" font-size="14" fill="#e2e8f0">before vs now,</text>
+      <text x="1110" y="156" font-size="14" fill="#e2e8f0">round by round</text>
+    </g>
+  </g>
+  <g stroke="#64748b" stroke-width="2.5" fill="none" marker-end="url(#a)">
+    <path d="M200 125 H236"/><path d="M410 125 H446"/><path d="M620 125 H656"/><path d="M830 125 H866"/><path d="M1010 125 H1036"/>
+  </g>
+  <!-- repeat arrow -->
+  <path d="M940 180 V258 H115 V186" stroke="#60a5fa" stroke-width="2.5" fill="none" stroke-dasharray="7 6" marker-end="url(#a)"/>
+  <text x="528" y="285" font-family="Helvetica Neue, Arial, sans-serif" font-size="15" fill="#93c5fd" text-anchor="middle">repeat with the improved prompt, until the gains flatten</text>
+</svg>
