@@ -1,0 +1,191 @@
+<title>Self-Training Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Report page: headline numbers first, then one chart per question. Edit ONLY the REPORT block in the script. */
+:root{--bg:#f7f8fa;--card:#ffffff;--fg:#14181f;--muted:#566070;--line:#d9dee6;--grid:#e6eaf0;
+--c1:#2563eb;--c2:#15803d;--c3:#b45309;--c4:#be123c;--gold:#a16207;--before:#9aa4b2;
+--font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--card:#171b22;--fg:#eef1f6;--muted:#a3adbb;--line:#2b323d;--grid:#232932;
+--c1:#6ea0ff;--c2:#4ade80;--c3:#fbbf24;--c4:#fb7185;--gold:#facc15;--before:#6b7686;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1116;--card:#171b22;--fg:#eef1f6;--muted:#a3adbb;--line:#2b323d;--grid:#232932;
+--c1:#6ea0ff;--c2:#4ade80;--c3:#fbbf24;--c4:#fb7185;--gold:#facc15;--before:#6b7686;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;
+padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-size:1.8rem;line-height:1.12;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:1.1rem;margin:0 0 4px;text-wrap:balance}
+p{margin:0}
+.eyebrow{font:600 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--c1)}
+.sub{color:var(--muted);max-width:64ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.note{color:var(--muted);font-size:.85rem;max-width:72ch}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--card)}
+.kpi b{display:block;font:600 1.5rem var(--mono);font-variant-numeric:tabular-nums;color:var(--c2)}
+.kpi span{color:var(--muted);font-size:.8rem}
+.rows{display:flex;flex-direction:column;gap:14px}
+.row{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:12px;align-items:center}
+.row .name{font-size:.88rem}
+.bars{display:flex;flex-direction:column;gap:4px;min-width:0}
+.bar{height:16px;border-radius:3px;position:relative;min-width:2px;background:var(--c1)}
+.bar.b{background:var(--before)}
+.bar i{position:absolute;left:calc(100% + 6px);top:0;font:500 .78rem/16px var(--mono);font-style:normal;color:var(--fg);white-space:nowrap;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c)}
+svg{width:100%;height:auto;display:block;overflow:visible}
+svg text{fill:var(--muted);font:11px var(--mono)}
+svg .lab{fill:var(--fg)}
+.minis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.mini{border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0}
+.mini h3{font-size:.85rem;margin:0 0 2px;display:flex;justify-content:space-between;gap:8px}
+.mini h3 em{font:600 .78rem var(--mono);font-style:normal}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+[hidden]{display:none!important}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;600&display=swap">
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <div class="eyebrow">Self-Training Loop</div>
+    <h1 id="title"></h1>
+    <p class="sub" id="subtitle"></p>
+  </header>
+  <div class="kpis" id="kpis"></div>
+
+  <section class="card" id="s-ba" hidden>
+    <div><h2>Before and now</h2><p class="note" id="n-ba"></p></div>
+    <div class="rows" id="ba"></div>
+  </section>
+
+  <section class="card" id="s-gain" hidden>
+    <div><h2>Gain over the original, version by version</h2><p class="note" id="n-gain"></p></div>
+    <div id="gain"></div><div class="legend" id="gain-legend"></div>
+  </section>
+
+  <section class="card" id="s-rounds" hidden>
+    <div><h2>Round by round</h2><p class="note" id="n-rounds"></p></div>
+    <div id="avg"></div><div class="legend" id="avg-legend"></div>
+    <div class="minis" id="minis"></div>
+  </section>
+
+  <section class="card" id="s-exp" hidden>
+    <div><h2>The doctor test</h2><p class="note" id="n-exp"></p></div>
+    <div class="rows" id="exp"></div>
+  </section>
+
+  <section class="card" id="s-table" hidden>
+    <div><h2>Every score</h2></div>
+    <div class="scroll"><table id="table"></table></div>
+    <p class="note" id="caveat"></p>
+  </section>
+</div>
+
+<script>
+/* ================= EDIT ONLY THIS BLOCK =================
+   Every list is optional: leave a section out and it is not drawn.
+   Scores are plain numbers on the scale you set in scaleMax.                         */
+var REPORT = {
+  title: "How the prompt improved",
+  subtitle: "Every score comes from a blind judge reading anonymous outputs from fresh AI writers that saw only the real prompt.",
+  scaleMax: 60,
+  /* headline numbers */
+  kpis: [ {big:"+9.5", small:"Writer A, 31.5 to 41"} ],
+  /* before/after in the SAME judging panel: [name, before, after] */
+  beforeAfter: { note:"Both bars come from the same blind panel. Grey is the original, colour is the latest version.",
+    rows: [ ["Writer A", 31.5, 41], ["Writer B", 32, 39] ] },
+  /* points above the original per version (null = not tested) */
+  gain: { note:"Each version was judged by a different panel, so read the shape, not the exact height.",
+    labels: ["Version 1","Version 2","Version 3"],
+    series: [ {n:"Writer A", p:[-1.5, 5.5, 9.5]}, {n:"Writer B", p:[5, 4, null]} ] },
+  /* round-by-round scores per item. groups = runs scored by the same judge brief: [first, last] round index */
+  rounds: { note:"One sample per item per round; margin about +-5.",
+    labels: ["R1","R2","R3"], groups: [[0,2]], groupNames: ["Judge brief 1"],
+    ymin: 10, ymax: 50, items: [ ["Item one",[30,33,36]], ["Item two",[25,27,31]] ] },
+  /* experiment bars: [name, value, kind] kind 0 = grey (not applied), 1 = colour (applied), 2 = gold (the ideal) */
+  experiments: { note:"Fixes A and C were applied; B was left out.",
+    rows: [ ["Today's prompt",39.5,0], ["Fix A",43.7,1], ["Fix B",40.5,0], ["Judge's ideal",48.7,2] ] },
+  caveat: "One sample per item per round has a margin of about +-5, so only averages and big jumps are reliable."
+};
+/* ================= END OF EDIT BLOCK ================= */
+
+(function(){
+var NS="http://www.w3.org/2000/svg",C=["var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
+function S(t,a,x){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(x!=null)e.textContent=x;return e}
+function H(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function $(id){return document.getElementById(id)}
+function sgn(v){return (v>0?"+":"")+v}
+var R=REPORT,max=R.scaleMax||60;
+document.title=R.title;$("title").textContent=R.title;$("subtitle").textContent=R.subtitle||"";
+(R.kpis||[]).forEach(function(k){var d=H("div","kpi");d.appendChild(H("b",null,k.big));d.appendChild(H("span",null,k.small));$("kpis").appendChild(d)});
+
+if(R.beforeAfter&&R.beforeAfter.rows&&R.beforeAfter.rows.length){
+ $("s-ba").hidden=false;$("n-ba").textContent=R.beforeAfter.note||"";
+ R.beforeAfter.rows.forEach(function(r){
+  var row=H("div","row");row.appendChild(H("div","name",r[0]));var bars=H("div","bars");
+  [["b",r[1]],["a",r[2]]].forEach(function(x){var b=H("div","bar "+x[0]);b.style.width=(x[1]/max*88)+"%";
+   var d=r[2]-r[1];b.appendChild(H("i",null,x[1].toFixed(1)+(x[0]==="a"?"  ("+sgn(+d.toFixed(1))+")":"")));bars.appendChild(b)});
+  row.appendChild(bars);$("ba").appendChild(row)})}
+
+if(R.gain&&R.gain.series&&R.gain.series.length){
+ $("s-gain").hidden=false;$("n-gain").textContent=R.gain.note||"";
+ var all=[];R.gain.series.forEach(function(s){s.p.forEach(function(v){if(v!=null)all.push(v)})});
+ var lo=Math.min(0,Math.floor(Math.min.apply(null,all)/4)*4),hi=Math.max(4,Math.ceil(Math.max.apply(null,all)/4)*4);
+ var W=680,Ht=300,m={l:46,r:38,t:14,b:34},n=R.gain.labels.length;
+ var svg=S("svg",{viewBox:"0 0 "+W+" "+Ht,role:"img","aria-label":"Gain over the original per version"});
+ var X=function(i){return m.l+(n>1?i*(W-m.l-m.r)/(n-1):0)},Y=function(v){return m.t+(hi-v)*(Ht-m.t-m.b)/(hi-lo)};
+ for(var v=lo;v<=hi;v+=4){svg.appendChild(S("line",{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),stroke:v===0?"var(--fg)":"var(--grid)","stroke-width":v===0?1.2:1}));svg.appendChild(S("text",{x:m.l-8,y:Y(v)+4,"text-anchor":"end"},sgn(v)))}
+ R.gain.labels.forEach(function(l,i){svg.appendChild(S("text",{x:X(i),y:Ht-10,"text-anchor":"middle"},l))});
+ svg.appendChild(S("text",{x:m.l,y:10},"points vs original"));
+ R.gain.series.forEach(function(s,si){var c=C[si%4],d="",pen=false;
+  s.p.forEach(function(v,i){if(v==null){pen=false;return}d+=(pen?"L":"M")+X(i)+" "+Y(v);pen=true});
+  svg.appendChild(S("path",{d:d,fill:"none",stroke:c,"stroke-width":2.5,"stroke-linejoin":"round"}));
+  s.p.forEach(function(v,i){if(v!=null)svg.appendChild(S("circle",{cx:X(i),cy:Y(v),r:4,fill:c,stroke:"var(--card)","stroke-width":1.5}))});
+  var li=s.p.length-1;while(li>0&&s.p[li]==null)li--;
+  if(s.p[li]!=null)svg.appendChild(S("text",{x:X(li)+8,y:Y(s.p[li])+4,class:"lab"},sgn(+s.p[li].toFixed(1))));
+  var sp=H("span",null,s.n);sp.style.setProperty("--c",c);$("gain-legend").appendChild(sp)});
+ $("gain").appendChild(svg)}
+
+if(R.rounds&&R.rounds.items&&R.rounds.items.length){
+ var Rd=R.rounds,rl=Rd.labels,groups=Rd.groups||[[0,rl.length-1]];
+ $("s-rounds").hidden=false;$("n-rounds").textContent=Rd.note||"";
+ var avgs=rl.map(function(_,i){var s=0;Rd.items.forEach(function(f){s+=f[1][i]});return s/Rd.items.length});
+ var amin=Math.min.apply(null,avgs),amax=Math.max.apply(null,avgs),y0=Math.floor(amin-2),y1=Math.ceil(amax+2);
+ var W2=680,H2=220,m2={l:40,r:30,t:14,b:30};
+ var sv=S("svg",{viewBox:"0 0 "+W2+" "+H2,role:"img","aria-label":"Average score by round"});
+ var X2=function(i){return m2.l+(rl.length>1?i*(W2-m2.l-m2.r)/(rl.length-1):0)},Y2=function(v){return m2.t+(y1-v)*(H2-m2.t-m2.b)/(y1-y0)};
+ var step=Math.max(1,Math.round((y1-y0)/6));
+ for(var g=y0;g<=y1;g+=step){sv.appendChild(S("line",{x1:m2.l,x2:W2-m2.r,y1:Y2(g),y2:Y2(g),stroke:"var(--grid)"}));sv.appendChild(S("text",{x:m2.l-8,y:Y2(g)+4,"text-anchor":"end"},g))}
+ rl.forEach(function(l,i){sv.appendChild(S("text",{x:X2(i),y:H2-8,"text-anchor":"middle"},l))});
+ groups.forEach(function(gr,gi){var c=C[gi%4],d="";
+  for(var i=gr[0];i<=gr[1];i++)d+=(i===gr[0]?"M":"L")+X2(i)+" "+Y2(avgs[i]);
+  sv.appendChild(S("path",{d:d,fill:"none",stroke:c,"stroke-width":2.5}));
+  for(var j=gr[0];j<=gr[1];j++){sv.appendChild(S("circle",{cx:X2(j),cy:Y2(avgs[j]),r:4,fill:c,stroke:"var(--card)","stroke-width":1.5}));sv.appendChild(S("text",{x:X2(j),y:Y2(avgs[j])-10,"text-anchor":"middle",class:"lab"},avgs[j].toFixed(1)))}
+  var sp=H("span",null,(Rd.groupNames&&Rd.groupNames[gi])||("Group "+(gi+1)));sp.style.setProperty("--c",c);$("avg-legend").appendChild(sp)});
+ $("avg").appendChild(sv);
+ var Wm=200,Hm=96,mm={l:6,r:6,t:8,b:16},ymin=Rd.ymin==null?0:Rd.ymin,ymax=Rd.ymax==null?max:Rd.ymax;
+ Rd.items.forEach(function(f){var v=f[1],card=H("div","mini"),h=H("h3");h.appendChild(H("span",null,f[0]));
+  var seg=groups.map(function(gr){return v[gr[0]]+" → "+v[gr[1]]}).join(" | ");h.appendChild(H("em",null,seg));card.appendChild(h);
+  var s=S("svg",{viewBox:"0 0 "+Wm+" "+Hm,role:"img","aria-label":f[0]+" by round"});
+  var Xm=function(i){return mm.l+(rl.length>1?i*(Wm-mm.l-mm.r)/(rl.length-1):0)},Ym=function(q){return mm.t+(ymax-q)*(Hm-mm.t-mm.b)/(ymax-ymin)};
+  for(var q=Math.ceil(ymin/10)*10;q<=ymax;q+=10)s.appendChild(S("line",{x1:mm.l,x2:Wm-mm.r,y1:Ym(q),y2:Ym(q),stroke:"var(--grid)"}));
+  groups.forEach(function(gr,gi){var c=C[gi%4],d="";for(var i=gr[0];i<=gr[1];i++)d+=(i===gr[0]?"M":"L")+Xm(i)+" "+Ym(v[i]);
+   s.appendChild(S("path",{d:d,fill:"none",stroke:c,"stroke-width":2}));
+   for(var j=gr[0];j<=gr[1];j++)s.appendChild(S("circle",{cx:Xm(j),cy:Ym(v[j]),r:(j===gr[0]||j===gr[1])?3.5:2.5,fill:c}))});
+  rl.forEach(function(l,i){s.appendChild(S("text",{x:Xm(i),y:Hm-3,"text-anchor":"middle"},l))});
+  card.appendChild(s);$("minis").appendChild(card)});
+ var t=$("table"),hd=H("tr");hd.appendChild(H("th",null,"Item"));rl.forEach(function(r){hd.appendChild(H("th","n",r))});t.appendChild(hd);
+ Rd.items.forEach(function(f){var tr=H("tr");tr.appendChild(H("td",null,f[0]));f[1].forEach(function(v){tr.appendChild(H("td","n",String(v)))});t.appendChild(tr)});
+ var ar=H("tr");ar.appendChild(H("td",null,"Average"));avgs.forEach(function(v){var td=H("td","n",v.toFixed(1));td.style.fontWeight="600";ar.appendChild(td)});t.appendChild(ar);
+ $("s-table").hidden=false;$("caveat").textContent=R.caveat||""}
+
+if(R.experiments&&R.experiments.rows&&R.experiments.rows.length){
+ $("s-exp").hidden=false;$("n-exp").textContent=R.experiments.note||"";
+ R.experiments.rows.forEach(function(r){var row=H("div","row");row.appendChild(H("div","name",r[0]));var bars=H("div","bars");
+  var b=H("div","bar");b.style.width=(r[1]/max*88)+"%";if(r[2]===0)b.style.background="var(--before)";if(r[2]===2)b.style.background="var(--gold)";
+  b.appendChild(H("i",null,r[1].toFixed(1)+(r[2]===1?"  (applied)":"")));bars.appendChild(b);row.appendChild(bars);$("exp").appendChild(row)})}
+})();
+</script>
